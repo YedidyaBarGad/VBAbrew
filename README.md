@@ -17,8 +17,7 @@ Designed with a clean "Coffee House" aesthetic, it takes natural language instru
 
 ## 🚀 Live Demo
 
-[**Click here to visit VbaBrew**](https://YOUR-USERNAME.github.io/REPO-NAME/)
-*(Replace the link above once you activate GitHub Pages)*
+[**Click here to visit VbaBrew**](https://YedidyaBarGad.github.io/VBAbrew/)
 
 ## 🛠️ How to Use
 
@@ -31,20 +30,6 @@ Designed with a clean "Coffee House" aesthetic, it takes natural language instru
     * Type your request in the text box.
     * Click **Brew Code ☕**.
     * Copy the result into your Excel VBA Editor (`Alt` + `F11`).
-
-## 💻 Local Installation
-
-Since VbaBrew is built with vanilla HTML, CSS, and JavaScript, there is no build process required.
-
-1.  Clone the repository:
-    ```bash
-    git clone [https://github.com/your-username/vbabrew.git](https://github.com/your-username/vbabrew.git)
-    ```
-2.  Navigate to the folder:
-    ```bash
-    cd vbabrew
-    ```
-3.  Open `index.html` in your browser.
 
 ## ⚙️ Tech Stack
 
