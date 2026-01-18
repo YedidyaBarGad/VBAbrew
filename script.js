@@ -17,16 +17,35 @@ async function generateVBA() {
     results.classList.add('hidden');
     loading.classList.remove('hidden');
 
-    // System Prompt: Strictly enforces JSON format and English language
+    // ---------------------------------------------------------
+    // ENHANCED SYSTEM PROMPT
+    // ---------------------------------------------------------
     const systemMessage = `
-    You are an expert Excel VBA developer. 
-    Your task is to convert user requests into VBA code.
-    You MUST return the output in valid JSON format only, with no markdown formatting (like \`\`\`json) outside the structure.
+    You are a Senior Excel Solutions Architect and VBA Expert.
     
-    The JSON object must have exactly these 3 keys:
-    1. "code": The VBA code itself (clean, indented, with comments).
-    2. "explanation": A concise explanation in ENGLISH of how the code works.
-    3. "limitations": A list in ENGLISH of any limitations, edge cases, security risks, or parts of the request that could not be fully implemented.
+    YOUR GOAL:
+    Convert the user's natural language request into robust, enterprise-grade VBA code, while also analyzing if a modern Excel feature would be a better solution.
+
+    STRICT OUTPUT FORMAT:
+    Return ONLY a valid JSON object. Do not wrap in markdown blocks (no \`\`\`json).
+    The JSON must contain exactly these 4 keys:
+    
+    1. "code": string 
+       - The VBA code.
+       - MUST include 'Option Explicit' at the top.
+       - MUST include standard Error Handling (On Error GoTo ErrorHandler).
+       - MUST include 'Application.ScreenUpdating = False' optimizations where applicable, and ensure they are reset in a 'CleanExit' block.
+       - Use descriptive variable names (e.g., 'wsSource' instead of 'ws').
+       
+    2. "explanation": string
+       - A concise, professional explanation of the logic flow.
+       
+    3. "limitations": string
+       - Specific edge cases (e.g., "Will fail if sheets are protected"), security warnings, or hard-coded assumptions made.
+       
+    4. "non_vba_alternative": string
+       - CRITICAL: Analyze the request. If this task is better solved using Power Query (Get & Transform), Dynamic Array Formulas (FILTER, UNIQUE, XLOOKUP), or Pivot Tables, explain that solution here. 
+       - If VBA is strictly the best tool, write "VBA is the optimal solution for this specific complexity."
     `;
 
     try {
@@ -41,8 +60,9 @@ async function generateVBA() {
                     { role: "system", content: systemMessage },
                     { role: "user", content: prompt }
                 ],
-                model: "llama-3.3-70b-versatile", // High performance model
-                temperature: 0.2, // Lower temperature for more precise code
+                // Using the larger model for better logic reasoning
+                model: "llama-3.3-70b-versatile", 
+                temperature: 0.1, // Very low temp for deterministic code
                 response_format: { type: "json_object" }
             })
         });
@@ -55,15 +75,34 @@ async function generateVBA() {
         const data = await response.json();
         const content = JSON.parse(data.choices[0].message.content);
 
-        // Populate results
+        // ---------------------------------------------------------
+        // POPULATE UI
+        // ---------------------------------------------------------
+        
+        // 1. The Code
         document.getElementById('codeOutput').textContent = content.code;
+        
+        // 2. The Explanation
         document.getElementById('explanationOutput').textContent = content.explanation;
+        
+        // 3. Limitations (Bullet points style)
         document.getElementById('limitationsOutput').textContent = content.limitations;
+
+        // 4. Non-VBA Alternative (New Field)
+        // Ensure you have an element with id="alternativeOutput" in your HTML
+        const altOutput = document.getElementById('alternativeOutput');
+        if (altOutput) {
+            if (content.non_vba_alternative && content.non_vba_alternative.length > 20) {
+                 altOutput.parentElement.classList.remove('hidden'); // Show container if hidden
+                 altOutput.textContent = content.non_vba_alternative;
+            } else {
+                 altOutput.parentElement.classList.add('hidden'); // Hide if not relevant
+            }
+        }
 
         loading.classList.add('hidden');
         results.classList.remove('hidden');
 
-        // Scroll to results
         results.scrollIntoView({ behavior: 'smooth' });
 
     } catch (error) {
@@ -71,13 +110,4 @@ async function generateVBA() {
         alert("Error: " + error.message);
         loading.classList.add('hidden');
     }
-}
-
-function copyCode() {
-    const codeText = document.getElementById('codeOutput').textContent;
-    navigator.clipboard.writeText(codeText).then(() => {
-        alert("Code copied to clipboard!");
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-    });
 }
