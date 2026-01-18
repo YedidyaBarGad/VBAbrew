@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VbaBrew - Excel Macro Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>VbaBrew ☕</h1>
+            <p>Brew fresh Excel VBA macros instantly using Groq AI</p>
+        </header>
+
+        <section class="input-section">
+            <div class="api-box">
+                <label for="apiKey">Groq API Key:</label>
+                <input type="password" id="apiKey" placeholder="Paste your key here (starts with gsk_)...">
+                
+                <details class="help-box">
+                    <summary>How do I get a free API Key?</summary>
+                    <ol>
+                        <li>Go to <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.</li>
+                        <li>Log in or Sign up (it's currently free).</li>
+                        <li>Click <strong>"Create API Key"</strong>.</li>
+                        <li>Copy the key and paste it above.</li>
+                    </ol>
+                    <p class="small-note">Note: Your key is used locally and never stored on our servers.</p>
+                </details>
+            </div>
+            
+            <div class="prompt-box">
+                <label for="userPrompt">What should the macro do?</label>
+                <textarea id="userPrompt" placeholder="e.g., Create a button that deletes empty rows in the active sheet and highlights duplicates in column A in red..."></textarea>
+            </div>
+
+            <button id="generateBtn" onclick="generateVBA()">Brew Code ☕</button>
+            <div id="loading" class="hidden">Brewing your code...</div>
+        </section>
+
+        <section id="results" class="results-section hidden">
+            
+            <div class="card code-card">
+                <h3>1. VBA Code</h3>
+                <pre><code id="codeOutput"></code></pre>
+                <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+            </div>
+
+            <div class="card info-card">
+                <h3>2. Explanation</h3>
+                <p id="explanationOutput"></p>
+            </div>
+
+            <div class="card warning-card">
+                <h3>3. Limitations & Safety</h3>
+                <p id="limitationsOutput"></p>
+            </div>
+
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
