@@ -41,7 +41,7 @@ async function generateVBA() {
                     { role: "system", content: systemMessage },
                     { role: "user", content: prompt }
                 ],
-                model: "llama3-70b-8192", // High performance model
+                model: "llama-3.3-70b-versatile", // High performance model
                 temperature: 0.2, // Lower temperature for more precise code
                 response_format: { type: "json_object" }
             })
