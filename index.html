@@ -6,6 +6,26 @@
     <title>VbaBrew - Excel Macro Generator</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Utility class for toggling visibility */
+        .hidden { display: none !important; }
+
+        /* Specific styling for the Modern Alternative Card */
+        .alternative-card {
+            background-color: #eff6ff; /* Light Blue */
+            border-left: 5px solid #2563eb; /* Darker Blue Accent */
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        
+        .alternative-card h3 {
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
 
@@ -18,7 +38,7 @@
         <section class="input-section">
             <div class="api-box">
                 <label for="apiKey">Groq API Key:</label>
-                <input type="password" id="apiKey" placeholder="Paste your key here (starts with gsk_)...">
+                <input type="password" id="apiKey" autocomplete="off" placeholder="Paste your key here (starts with gsk_)...">
                 
                 <details class="help-box">
                     <summary>How do I get a free API Key?</summary>
@@ -43,6 +63,11 @@
 
         <section id="results" class="results-section hidden">
             
+            <div class="card alternative-card hidden">
+                <h3>💡 Modern Excel Alternative</h3>
+                <p id="alternativeOutput" style="white-space: pre-wrap;"></p>
+            </div>
+
             <div class="card code-card">
                 <h3>1. VBA Code</h3>
                 <pre><code id="codeOutput"></code></pre>
