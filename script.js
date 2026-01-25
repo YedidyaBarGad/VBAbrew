@@ -1,3 +1,56 @@
+// Conversation history for iterative feedback
+let conversationHistory = [];
+let lastGeneratedCode = null;
+
+// ---------------------------------------------------------
+// ENHANCED SYSTEM PROMPT - Clear and Precise
+// ---------------------------------------------------------
+const SYSTEM_PROMPT = `You are a VBA Code Generator for Microsoft Excel.
+
+## YOUR TASK
+Generate production-ready VBA code from the user's description.
+
+## INPUT
+The user will describe what they want an Excel macro to do in plain language.
+
+## OUTPUT
+Return a JSON object with exactly these 4 keys:
+
+{
+  "code": "...",
+  "explanation": "...",
+  "limitations": "...",
+  "non_vba_alternative": "..."
+}
+
+### Key Details:
+
+**code** (required)
+- Complete, runnable VBA code
+- Start with 'Option Explicit'
+- Include error handling: On Error GoTo ErrorHandler
+- Include performance optimization: Application.ScreenUpdating = False
+- Use clear variable names (e.g., wsData, lastRow, targetRange)
+- Include cleanup in a CleanExit block
+
+**explanation** (required)
+- 2-3 sentences explaining what the code does
+- Mention key logic steps
+
+**limitations** (required)
+- List specific edge cases (e.g., "Fails if sheet is protected")
+- Note any assumptions (e.g., "Assumes data starts in row 2")
+- Warn about destructive operations
+
+**non_vba_alternative** (required)
+- If a built-in Excel feature works better (Power Query, XLOOKUP, Pivot Tables), explain it
+- Otherwise write: "VBA is the optimal solution for this task."
+
+## RULES
+1. Return ONLY valid JSON - no markdown, no code blocks, no extra text
+2. If the user provides feedback on previous code, incorporate their changes
+3. Keep explanations concise but complete`;
+
 async function generateVBA() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const prompt = document.getElementById('userPrompt').value.trim();
@@ -14,39 +67,21 @@ async function generateVBA() {
     }
 
     // Reset UI
-    results.classList.add('hidden');
     loading.classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
 
-    // ---------------------------------------------------------
-    // ENHANCED SYSTEM PROMPT
-    // ---------------------------------------------------------
-    const systemMessage = `
-    You are a Senior Excel Solutions Architect and VBA Expert.
-    
-    YOUR GOAL:
-    Convert the user's natural language request into robust, enterprise-grade VBA code, while also analyzing if a modern Excel feature would be a better solution.
+    // Build messages array with conversation history
+    const messages = [
+        { role: "system", content: SYSTEM_PROMPT }
+    ];
 
-    STRICT OUTPUT FORMAT:
-    Return ONLY a valid JSON object. Do not wrap in markdown blocks (no \`\`\`json).
-    The JSON must contain exactly these 4 keys:
-    
-    1. "code": string 
-       - The VBA code.
-       - MUST include 'Option Explicit' at the top.
-       - MUST include standard Error Handling (On Error GoTo ErrorHandler).
-       - MUST include 'Application.ScreenUpdating = False' optimizations where applicable, and ensure they are reset in a 'CleanExit' block.
-       - Use descriptive variable names (e.g., 'wsSource' instead of 'ws').
-       
-    2. "explanation": string
-       - A concise, professional explanation of the logic flow.
-       
-    3. "limitations": string
-       - Specific edge cases (e.g., "Will fail if sheets are protected"), security warnings, or hard-coded assumptions made.
-       
-    4. "non_vba_alternative": string
-       - CRITICAL: Analyze the request. If this task is better solved using Power Query (Get & Transform), Dynamic Array Formulas (FILTER, UNIQUE, XLOOKUP), or Pivot Tables, explain that solution here. 
-       - If VBA is strictly the best tool, write "VBA is the optimal solution for this specific complexity."
-    `;
+    // Add conversation history for context
+    conversationHistory.forEach(msg => {
+        messages.push(msg);
+    });
+
+    // Add current user message
+    messages.push({ role: "user", content: prompt });
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -56,13 +91,9 @@ async function generateVBA() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                messages: [
-                    { role: "system", content: systemMessage },
-                    { role: "user", content: prompt }
-                ],
-                // Using the larger model for better logic reasoning
-                model: "llama-3.3-70b-versatile", 
-                temperature: 0.1, // Very low temp for deterministic code
+                messages: messages,
+                model: "llama-3.3-70b-versatile",
+                temperature: 0.1,
                 response_format: { type: "json_object" }
             })
         });
@@ -73,41 +104,97 @@ async function generateVBA() {
         }
 
         const data = await response.json();
-        const content = JSON.parse(data.choices[0].message.content);
+        const assistantMessage = data.choices[0].message.content;
+        const content = JSON.parse(assistantMessage);
+
+        // Store in conversation history for follow-up
+        conversationHistory.push({ role: "user", content: prompt });
+        conversationHistory.push({ role: "assistant", content: assistantMessage });
+        lastGeneratedCode = content.code;
 
         // ---------------------------------------------------------
         // POPULATE UI
         // ---------------------------------------------------------
-        
+
         // 1. The Code
         document.getElementById('codeOutput').textContent = content.code;
-        
+
         // 2. The Explanation
         document.getElementById('explanationOutput').textContent = content.explanation;
-        
-        // 3. Limitations (Bullet points style)
+
+        // 3. Limitations
         document.getElementById('limitationsOutput').textContent = content.limitations;
 
-        // 4. Non-VBA Alternative (New Field)
-        // Ensure you have an element with id="alternativeOutput" in your HTML
+        // 4. Non-VBA Alternative
         const altOutput = document.getElementById('alternativeOutput');
         if (altOutput) {
             if (content.non_vba_alternative && content.non_vba_alternative.length > 20) {
-                 altOutput.parentElement.classList.remove('hidden'); // Show container if hidden
-                 altOutput.textContent = content.non_vba_alternative;
+                altOutput.parentElement.classList.remove('hidden');
+                altOutput.textContent = content.non_vba_alternative;
             } else {
-                 altOutput.parentElement.classList.add('hidden'); // Hide if not relevant
+                altOutput.parentElement.classList.add('hidden');
             }
         }
 
+        // Show feedback section
+        showFeedbackSection();
+
         loading.classList.add('hidden');
         results.classList.remove('hidden');
-
         results.scrollIntoView({ behavior: 'smooth' });
+
+        // Update prompt placeholder for feedback mode
+        updatePromptForFeedback();
 
     } catch (error) {
         console.error(error);
         alert("Error: " + error.message);
         loading.classList.add('hidden');
+    } finally {
+        document.getElementById('generateBtn').disabled = false;
     }
+}
+
+function showFeedbackSection() {
+    const feedbackSection = document.getElementById('feedbackSection');
+    if (feedbackSection) {
+        feedbackSection.classList.remove('hidden');
+    }
+}
+
+function updatePromptForFeedback() {
+    const promptArea = document.getElementById('userPrompt');
+    promptArea.value = '';
+    promptArea.placeholder = 'Tell me what to change... (e.g., "Add a progress bar", "Make it work with multiple sheets", "Change the output format to...")';
+}
+
+function startNewConversation() {
+    // Reset conversation history
+    conversationHistory = [];
+    lastGeneratedCode = null;
+
+    // Reset UI
+    document.getElementById('userPrompt').value = '';
+    document.getElementById('userPrompt').placeholder = "e.g., Create a button that deletes empty rows in the active sheet and highlights duplicates in column A in red...";
+    document.getElementById('results').classList.add('hidden');
+
+    const feedbackSection = document.getElementById('feedbackSection');
+    if (feedbackSection) {
+        feedbackSection.classList.add('hidden');
+    }
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyCode() {
+    const code = document.getElementById('codeOutput').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = originalText; }, 2000);
+    }).catch(err => {
+        alert('Failed to copy: ' + err);
+    });
 }
