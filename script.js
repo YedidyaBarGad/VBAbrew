@@ -1,11 +1,11 @@
 // API Configuration
-// API Configuration
-// API Configuration
 const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.protocol === 'file:';
 
 const API_URL = isLocal ? 'http://localhost:3001/api' : '/api';
+console.log(`Current Host: ${window.location.hostname}`);
+console.log(`Detected Environment: ${isLocal ? 'Local' : 'Production'}`);
 console.log(`Using API URL: ${API_URL}`);
 
 // State
@@ -76,6 +76,7 @@ async function handleRegister(event) {
         alert('Registration successful! You are now logged in.');
     } catch (error) {
         errorMsg.textContent = error.message;
+        alert(`Registration Failed: ${error.message}\n\nPlease check your internet connection or try a different username.`);
     }
 }
 
