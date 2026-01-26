@@ -230,10 +230,29 @@ async function loadChat(chatId) {
         currentChatId = data.chat._id;
         conversationHistory = data.chat.conversationHistory;
 
-        // Restore last code if available (simplified for now)
-        if (data.chat.lastGeneratedCode) {
-            document.getElementById('codeOutput').textContent = data.chat.lastGeneratedCode;
-            document.getElementById('results').classList.remove('hidden');
+        // Restore UI from history
+        if (conversationHistory.length > 0) {
+            const lastMsg = conversationHistory[conversationHistory.length - 1];
+            if (lastMsg.role === 'assistant') {
+                try {
+                    const content = JSON.parse(lastMsg.content);
+
+                    // Restore Explanation & Limitations
+                    document.getElementById('codeOutput').textContent = content.code || '';
+                    document.getElementById('explanationOutput').textContent = content.explanation || '';
+                    document.getElementById('limitationsOutput').textContent = content.limitations || '';
+
+                    const altOutput = document.getElementById('alternativeOutput');
+                    if (altOutput && content.non_vba_alternative) {
+                        altOutput.parentElement.classList.remove('hidden');
+                        altOutput.textContent = content.non_vba_alternative;
+                    }
+
+                    document.getElementById('results').classList.remove('hidden');
+                } catch (e) {
+                    console.log('Could not parse last message as JSON', e);
+                }
+            }
         }
 
         // Refresh list to show active state
