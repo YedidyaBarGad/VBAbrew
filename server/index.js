@@ -60,7 +60,12 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        dbState: mongoose.connection.readyState,
+        env: process.env.NODE_ENV
+    });
 });
 
 // Local Development Support
