@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VbaBrew - Excel Macro Generator</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    
+
     <style>
         /* Utility class for toggling visibility */
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         /* Specific styling for the Modern Alternative Card */
         .alternative-card {
-            background-color: #eff6ff; /* Light Blue */
-            border-left: 5px solid #2563eb; /* Darker Blue Accent */
+            background-color: #eff6ff;
+            /* Light Blue */
+            border-left: 5px solid #2563eb;
+            /* Darker Blue Accent */
             color: #1e3a8a;
             margin-bottom: 20px;
         }
-        
+
         .alternative-card h3 {
             color: #1e40af;
             display: flex;
@@ -27,42 +32,91 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
         <header>
-            <h1>VbaBrew ☕</h1>
-            <p>Brew fresh Excel VBA macros instantly using Groq AI</p>
+            <div id="userBar" class="user-bar hidden">
+                <span id="welcomeMsg">Welcome!</span>
+                <button onclick="logout()" class="text-btn">Logout</button>
+            </div>
+            <div class="header-content">
+                <h1>VBA Brew ☕</h1>
+                <p>Brew fresh Excel VBA macros instantly using Groq AI</p>
+                <button id="authBtn" onclick="showAuthModal()" class="auth-btn">Login to Save History</button>
+            </div>
         </header>
 
-        <section class="input-section">
-            <div class="api-box">
-                <label for="apiKey">Groq API Key:</label>
-                <input type="password" id="apiKey" autocomplete="off" placeholder="Paste your key here (starts with gsk_)...">
-                
-                <details class="help-box">
-                    <summary>How do I get a free API Key?</summary>
-                    <ol>
-                        <li>Go to <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.</li>
-                        <li>Log in or Sign up (it's currently free).</li>
-                        <li>Click <strong>"Create API Key"</strong>.</li>
-                        <li>Copy the key and paste it above.</li>
-                    </ol>
-                    <p class="small-note">Note: Your key is used locally and never stored on our servers.</p>
-                </details>
-            </div>
-            
-            <div class="prompt-box">
-                <label for="userPrompt">What should the macro do?</label>
-                <textarea id="userPrompt" placeholder="e.g., Create a button that deletes empty rows in the active sheet and highlights duplicates in column A in red..."></textarea>
-            </div>
+        <div class="main-layout">
+            <aside id="chatSidebar" class="sidebar hidden">
+                <div class="sidebar-header">
+                    <h3>Your Brews</h3>
+                    <button onclick="startNewConversation()" class="new-chat-btn" title="New Chat">+</button>
+                </div>
+                <div id="chatList" class="chat-list">
+                    <!-- Chat items will be populated here -->
+                </div>
+            </aside>
 
-            <button id="generateBtn" onclick="generateVBA()">Brew Code ☕</button>
-            <div id="loading" class="hidden">Brewing your code...</div>
-        </section>
+            <section class="input-section">
+                <div class="api-box">
+                    <label for="apiKey">Groq API Key:</label>
+                    <input type="password" id="apiKey" autocomplete="off"
+                        placeholder="Paste your key here (starts with gsk_)...">
+
+                    <details class="help-box">
+                        <summary>How do I get a free API Key?</summary>
+                        <ol>
+                            <li>Go to <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.
+                            </li>
+                            <li>Log in or Sign up (it's currently free).</li>
+                            <li>Click <strong>"Create API Key"</strong>.</li>
+                            <li>Copy the key and paste it above.</li>
+                        </ol>
+                        <p class="small-note">Note: Your key is NOT stored on our servers.</p>
+                    </details>
+                </div>
+
+                <div class="prompt-box">
+                    <label for="userPrompt">What should the macro do?</label>
+                    <textarea id="userPrompt"
+                        placeholder="e.g., Create a button that deletes empty rows in the active sheet and highlights duplicates in column A in red..."></textarea>
+                </div>
+
+                <button id="generateBtn" onclick="generateVBA()">Brew Code ☕</button>
+                <div id="loading" class="hidden">Brewing your code...</div>
+            </section>
+        </div>
+
+        <!-- Auth Modal -->
+        <div id="authModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+                <div class="auth-tabs">
+                    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+                </div>
+
+                <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                    <input type="text" id="loginUsername" placeholder="Username" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit" class="primary-btn">Login</button>
+                    <p id="loginError" class="error-msg"></p>
+                </form>
+
+                <form id="registerForm" class="auth-form hidden" onsubmit="handleRegister(event)">
+                    <input type="text" id="regUsername" placeholder="Choose a Username" required>
+                    <input type="password" id="regPassword" placeholder="Choose a Password (min 6 chars)" required
+                        minlength="6">
+                    <button type="submit" class="primary-btn">Register</button>
+                    <p id="regError" class="error-msg"></p>
+                </form>
+            </div>
+        </div>
 
         <section id="results" class="results-section hidden">
-            
+
             <div class="card alternative-card hidden">
                 <h3>💡 Modern Excel Alternative</h3>
                 <p id="alternativeOutput" style="white-space: pre-wrap;"></p>
@@ -98,4 +152,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

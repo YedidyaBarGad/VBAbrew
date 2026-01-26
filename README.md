@@ -2,18 +2,14 @@
 
 **VbaBrew** is a modern, lightweight web tool that generates Excel VBA macros instantly using the power of Groq AI (Llama 3). 
 
-Designed with a clean "Coffee House" aesthetic, it takes natural language instructions and "brews" them into structured, executable VBA code, complete with explanations and safety warnings.
+Designed with a clean "Coffee House" aesthetic, it takes natural language instructions and "brews" them into structured, executable VBA code.
 
 ## ✨ Features
 
 * **Natural Language to Code:** Simply describe what you need (e.g., *"Delete empty rows and highlight duplicates"*), and get working code.
-* **Structured Output:** The AI returns three distinct sections:
-    1.  **The Code:** Clean, commented VBA ready for the Excel Module.
-    2.  **The Explanation:** A breakdown of how the logic works.
-    3.  **Limitations & Safety:** Crucial warnings about what the code *can't* do or where to be careful.
-* **Client-Side Security:** Your API Key is **never** stored on a server. It is sent directly from your browser to Groq's API.
-* **Fast & Free:** Uses Groq's ultra-fast inference engine (currently free).
-* **Responsive Design:** A modern, brown-and-cream aesthetic that looks good on any screen.
+* **Persistent History:** Log in to save your generated macros and prompts using the **MongoDB Backend**.
+* **Smart UI:** Modern, responsive design with "Light/Dark" IDE feel for code.
+* **Client-Side Security:** Your Groq API Key is **never** stored on our server (stored locally or entered per session).
 
 ## 🚀 Live Demo
 
@@ -33,24 +29,28 @@ Designed with a clean "Coffee House" aesthetic, it takes natural language instru
 
 ## ⚙️ Tech Stack
 
-* **Frontend:** HTML5, CSS3 (Flexbox/Grid), Vanilla JavaScript (ES6+).
-* **AI Backend:** [Groq API](https://groq.com/) running `llama3-70b-8192`.
-* **Font:** Inter (via Google Fonts).
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript.
+* **Backend:** Node.js, Express, MongoDB Atlas (for user history).
+* **AI Engine:** [Groq API](https://groq.com/) running `llama3-70b-8192`.
+
+## ☁️ Deployment on Vercel
+
+This project is configured for seamless deployment on Vercel.
+
+1.  **Push to GitHub**: Ensure this code is in a GitHub repository.
+2.  **Import to Vercel**:
+    *   Go to [Vercel Dashboard](https://vercel.com/new).
+    *   Import your repository.
+3.  **Configure Environment**:
+    *   In Project Settings > Environment Variables, add:
+        *   `MONGODB_URI`: Your MongoDB Atlas connection string.
+        *   `JWT_SECRET`: A random string for secure tokens.
+4.  **Deploy**: Vercel will automatically detect the `vercel.json` config and deploy the frontend + serverless backend.
 
 ## 🔒 Privacy & Security
 
-* **No Database:** We do not store your prompts or your API keys.
-* **Direct Connection:** The application makes a direct `fetch` request from your browser to the Groq API endpoint.
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have ideas for better prompt engineering or UI improvements:
-
-1.  Fork the Project.
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the Branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
+* **API Keys:** Your Groq API Key is handled client-side and never saved to the database.
+* **User Data:** Only your username, password hash, and chat history are stored in MongoDB.
 
 ## 📄 License
 
