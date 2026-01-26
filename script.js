@@ -54,7 +54,15 @@ async function handleRegister(event) {
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            if (!response.ok) throw new Error(text || `Error ${response.status}`);
+            throw new Error("Invalid server response");
+        }
 
         if (!response.ok) throw new Error(data.error || 'Registration failed');
 
@@ -79,7 +87,15 @@ async function handleLogin(event) {
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            if (!response.ok) throw new Error(text || `Error ${response.status}`);
+            throw new Error("Invalid server response");
+        }
 
         if (!response.ok) throw new Error(data.error || 'Login failed');
 
@@ -318,8 +334,17 @@ async function generateVBA() {
         });
 
         if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.error?.message || response.statusText);
+            const contentType = response.headers.get("content-type");
+            let errorMessage = response.statusText;
+
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                const errData = await response.json();
+                errorMessage = errData.error?.message || errorMessage;
+            } else {
+                const text = await response.text();
+                errorMessage = text || `Error ${response.status}`;
+            }
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
