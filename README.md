@@ -17,7 +17,7 @@ Designed with a clean "Coffee House" aesthetic, it takes natural language instru
 
 ## 🚀 Live Demo
 
-[**Click here to visit VbaBrew**](https://YedidyaBarGad.github.io/VBAbrew/)
+[**Click here to visit VbaBrew**](https://vbabrew.vercel.app)
 
 ## 🛠️ How to Use
 
