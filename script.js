@@ -3,7 +3,10 @@ const isLocal = window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.protocol === 'file:';
 
-const API_URL = isLocal ? 'http://localhost:3001/api' : '/api';
+// AUTO-DETECT PRODUCTION URL or use manual fallback
+const PROD_URL = 'https://vbabrew.vercel.app';
+const API_URL = isLocal ? 'http://localhost:3001/api' : `${PROD_URL}/api`;
+
 console.log(`Current Host: ${window.location.hostname}`);
 console.log(`Detected Environment: ${isLocal ? 'Local' : 'Production'}`);
 console.log(`Using API URL: ${API_URL}`);
@@ -76,7 +79,7 @@ async function handleRegister(event) {
         alert('Registration successful! You are now logged in.');
     } catch (error) {
         errorMsg.textContent = error.message;
-        alert(`Registration Failed: ${error.message}\n\nPlease check your internet connection or try a different username.`);
+        alert(`Registration Failed: ${error.message}\n\nAPI URL: ${API_URL}`);
     }
 }
 
@@ -110,6 +113,7 @@ async function handleLogin(event) {
         closeAuthModal();
     } catch (error) {
         errorMsg.textContent = error.message;
+        alert(`Login Failed: ${error.message}\n\nAPI URL: ${API_URL}`);
     }
 }
 
