@@ -72,14 +72,18 @@ async function handleRegister(event) {
             throw new Error("Invalid server response (not JSON)");
         }
 
-        if (!response.ok) throw new Error(data.error || 'Registration failed');
+        if (!response.ok) {
+            // If we have JSON error, use it. Otherwise use raw text (truncated)
+            const errorText = data.error || (text ? text.substring(0, 200) : "Unknown Error");
+            throw new Error(`Server returned ${response.status}: ${errorText}`);
+        }
 
         loginSuccess(data.token, data.user);
         closeAuthModal();
         alert('Registration successful! You are now logged in.');
     } catch (error) {
         errorMsg.textContent = error.message;
-        alert(`Registration Failed: ${error.message}\n\nAPI URL: ${API_URL}`);
+        alert(`DEBUG ERROR:\n${error.message}\n\nURL: ${API_URL}`);
     }
 }
 
