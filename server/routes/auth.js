@@ -44,8 +44,8 @@ router.post('/register', async (req, res) => {
             user: { id: user._id, username: user.username }
         });
     } catch (error) {
-        console.error('Register error:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Register error stack:', error.stack);
+        res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
 

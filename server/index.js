@@ -53,6 +53,11 @@ app.use(async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+    res.json({ message: 'VBAbrew API is running 🚀', version: '1.0.0' });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

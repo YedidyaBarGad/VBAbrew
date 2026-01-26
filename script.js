@@ -1,6 +1,10 @@
 // API Configuration
 // API Configuration
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// API Configuration
+const isLocal = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.protocol === 'file:';
+
 const API_URL = isLocal ? 'http://localhost:3001/api' : '/api';
 console.log(`Using API URL: ${API_URL}`);
 
@@ -55,13 +59,14 @@ async function handleRegister(event) {
         });
 
         let data;
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-            data = await response.json();
-        } else {
-            const text = await response.text();
+        const text = await response.text();
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            // Not JSON
             if (!response.ok) throw new Error(text || `Error ${response.status}`);
-            throw new Error("Invalid server response");
+            throw new Error("Invalid server response (not JSON)");
         }
 
         if (!response.ok) throw new Error(data.error || 'Registration failed');
@@ -88,13 +93,14 @@ async function handleLogin(event) {
         });
 
         let data;
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-            data = await response.json();
-        } else {
-            const text = await response.text();
+        const text = await response.text();
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            // Not JSON
             if (!response.ok) throw new Error(text || `Error ${response.status}`);
-            throw new Error("Invalid server response");
+            throw new Error("Invalid server response (not JSON)");
         }
 
         if (!response.ok) throw new Error(data.error || 'Login failed');
