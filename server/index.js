@@ -28,7 +28,7 @@ async function connectToDatabase() {
     }
 
     const opts = {
-        bufferCommands: false,
+        bufferCommands: true, // Allow commands to queue while connecting
     };
 
     console.log('Connecting to MongoDB...');
